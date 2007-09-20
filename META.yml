@@ -1,0 +1,36 @@
+---
+name: Eval-Context
+version: 0.01
+author:
+  - 'Khemir Nadim ibn Hamouda. <nadim@khemir.net>'
+abstract: "Evalute perl code in context wrapper\n"
+license: perl
+resources:
+  license: http://dev.perl.org/licenses/
+requires:
+  Data::Compare: 0
+  Data::TreeDumper: 0
+  File::Slurp: 0
+  Readonly: 0
+  Sub::Exporter: 0
+  Test::Block: 0
+  Test::Dependencies: 0
+  Test::Distribution: 0
+  Test::Exception: 0
+  Test::NoWarnings: 0
+  Test::Output: 0
+  Test::Perl::Critic: 0
+  Test::Pod: 0
+  Test::Pod::Coverage: 0
+  Test::Spelling: 0
+  Test::Strict: 0
+  Test::Warn: 0
+  version: 0.5
+provides:
+  Eval::Context:
+    file: lib/Eval/Context.pm
+    version: 0.01
+generated_by: Module::Build version 0.2808
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2
