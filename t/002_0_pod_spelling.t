@@ -13,6 +13,7 @@ add_stopwords
 		
 		CanonizeName
 		CheckOptionNames
+		GetPackageName
 		SetInteractionDefault
 		
 		Nadim

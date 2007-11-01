@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION     = 0.01;
+$VERSION     = 0.02;
 }
 
 #-------------------------------------------------------------------------------
@@ -18,6 +18,8 @@ Readonly my $EMPTY_STRING => q{} ;
 
 use Carp qw(carp croak confess) ;
 use File::Slurp ;
+use Sub::Install qw(install_sub reinstall_sub) ;
+
 #-------------------------------------------------------------------------------
 
 =head1 NAME
@@ -53,6 +55,7 @@ Readonly my $NEW_ARGUMENTS =>
 			PRE_CODE POST_CODE
 			PERL_EVAL_CONTEXT
 			PACKAGE
+			INSTALL_SUBS
 			DISPLAY_SOURCE_IN_CONTEXT
 			INTERACTION
 			FILE LINE
@@ -74,8 +77,14 @@ temporarily overridden during the L<eval> call. All arguments have default value
 		PACKAGE           => 'libraries',
 		PRE_CODE          => 'use strict ;\n"
 		POST_CODE         => 'some_code_automatically_run() ;'
-		PERL_EVAL_CONTEXT => undef, # libraries willalways evaluated in scalar context
+		PERL_EVAL_CONTEXT => undef, # libraries will always evaluated in scalar context
 		
+		INSTALL_SUBS =>
+			{
+			PrintHi => sub {print "hi\n" ;},
+			TwoPlusTwo => sub {4},
+			},
+			
 		INTERACTION =>
 			{
 			INFO  => \&sub_info,
@@ -96,13 +105,17 @@ B<Arguments>
 
 =item * NAME - use when displaying information about the object. Set automatically if not set.
 
-=item * PACKAGE - the package the code passed to I<eval> will be in
+=item * PACKAGE - the package the code passed to I<eval> will be in. If not set, I<main> is used.
 
 =item * PRE_CODE - code prepended to the code passed to I<eval>
 
 =item * POST_CODE - code appended to the code passed to I<eval>
 
 =item * PERL_EVAL_CONTEXT - the context to eval code in (void, scalar, list). Works as  B<wantarray>
+
+=item * INSTALL_SUBS - subs that will be available in the eval. 
+
+A hash where the key is a function name and the value a code reference.
 
 =item * INTERACTION
 
@@ -343,6 +356,8 @@ the duration of this call.
 
 =back
 
+=item * You can also override any option passed to the constructor during this call.
+
 =back
 
 B<Return>
@@ -372,7 +387,18 @@ unless(defined $options{FILE})
 $options{NAME} = CanonizeName($options{NAME}) ;
 SetInteractionDefault(\%options) ;
 
-$options{PACKAGE} = exists $options{PACKAGE} ? 'package ' . CanonizeName($options{PACKAGE}) . ' ;' : $EMPTY_STRING ;
+my $package = GetPackageName(\%options) ;
+
+for my $sub_name (keys %{$options{INSTALL_SUBS}})
+	{
+	if('CODE' ne ref $options{INSTALL_SUBS}{$sub_name} )
+		{
+		$options{INTERACTION}{DIE}->("$self->{NAME}: '$sub_name' from 'INSTALL_SUBS' isn't a code reference at '$options{FILE}:$options{LINE}'!")  ;
+		}
+		
+	reinstall_sub({ code => $options{INSTALL_SUBS}{$sub_name},  into =>$package,  as   => $sub_name}) ;
+	}
+
 $options{PRE_CODE} = defined $options{PRE_CODE} ? $options{PRE_CODE} : $EMPTY_STRING ;
 
 if(exists $options{CODE_FROM_FILE} && exists $options{CODE} )
@@ -395,7 +421,7 @@ $options{POST_CODE} = defined $options{POST_CODE} ? $options{POST_CODE} : $EMPTY
 
 my $code_to_eval = <<"EOS" ;
 #line 0 '$options{NAME}'
-$options{PACKAGE}
+package $package ;
 $options{PRE_CODE}
 
 #line 1 '$options{NAME}'
@@ -433,6 +459,28 @@ else
 	$options{INTERACTION}{DIE}->($EVAL_ERROR) if $EVAL_ERROR ;
 	return ;
 	}
+}
+
+#-------------------------------------------------------------------------------
+
+sub GetPackageName
+{
+
+=head2 GetPackageName
+
+This shall not be used directly.
+
+=cut
+
+my ($options) = @_ ;
+
+my $package = exists $options->{PACKAGE}
+		? CanonizeName($options->{PACKAGE})
+		: 'main' ;
+
+$package = $package eq $EMPTY_STRING ? 'main' : $package ;
+
+return($package) ;
 }
 
 #-------------------------------------------------------------------------------

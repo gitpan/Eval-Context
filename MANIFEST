@@ -19,5 +19,9 @@ t/002_0_pod_spelling.t
 t/002_1_pod.t
 t/002_2_pod_coverage.t
 t/003_perl_critic.t
+t/004_new.t
+t/005_eval.t
+t/005_eval_no_NoWarnings.t
+t/006_install_subs.t
 t/perlcriticrc
 t/test_template
