@@ -208,8 +208,13 @@ my $build = $class->new
 		'Readonly'         => 0,
 		'Data::Compare'    => 0,
 		'Sub::Exporter'     => 0,
+		'Package::Generator' => 0,
 		'Data::TreeDumper' => 0,
 		'File::Slurp' => 0,
+		'Sub::Install' => 0,
+		'Symbol' => 0,
+		'Safe' => 0,
+		'Data::Dumper' => 0,
 		'version'    => 0.50,
 		
 		'Test::Block' => 0,

@@ -16,7 +16,7 @@ use Eval::Context ;
 
 
 {
-local $Plan = {'eval empty options' => 4} ;
+local $Plan = {'eval empty options' => 6} ;
 
 #~ NAME
 #~ PRE_CODE
@@ -39,8 +39,18 @@ lives_ok
 	
 lives_ok
 	{
+	$context->eval(CODE => '', PACKAGE => undef) ;
+	} 'anonymous package from bad package' ;
+
+throws_ok
+	{
+	$context->eval(CODE => 'die', PACKAGE => undef) ;
+	} qr/Anonymous/,  'anonymous package from bad package' ;
+	
+lives_ok
+	{
 	$context->eval(CODE => '', PACKAGE => 'A', PRE_CODE  => "use strict;\nuse warnings;\n") ;
-	} 'empty code, pre code' ;
+	}'empty code, pre code' ;
 
 lives_ok
 	{
@@ -64,14 +74,14 @@ is($package, 'HOP', 'package override') ;
 my $context = new Eval::Context() ;
 my $package = $context->eval(CODE => '__PACKAGE__ ;') ;
 
-is($package, 'main', 'default package is main') ;
+like ($package, qr/Eval::Context::Run_\d+/, 'default package name') ;
 } 
 
 {
 my $context = new Eval::Context() ;
 my $package = $context->eval(CODE => '__PACKAGE__ ;',  PACKAGE => '') ;
 
-is($package, 'main', 'default package is main') ;
+like ($package, qr/Eval::Context::Run_\d+/, 'empty package name') ;
 } 
 
 }
@@ -120,7 +130,6 @@ lives_ok
 
 
 # use PERL_EVAL_CONTEXT
-
 lives_ok
 	{
 	my $value = $context->eval
@@ -180,13 +189,13 @@ throws_ok
 throws_ok
 	{
 	$context->eval(CODE => '') ;
-	}qr/POST_CODE at 'THE_NAME'/, 'POST_CODE and NAME' ;
+	}qr/POST_CODE at 'THE_NAME_called_at_t_005_eval.t:\d+'/, 'POST_CODE and NAME' ;
 
 
 #~ PACKAGE
 lives_ok
 	{
-	$context->eval(CODE => "sub GetVariable\n{return 117 ;}\n", PACKAGE => 'TEST_PACKAGE', POST_CODE => '') ;
+	$context->eval(CODE => "sub GetVariable\n{return 117 ;}\n", PACKAGE => 'TEST_PACKAGE', POST_CODE => '', REMOVE_PACKAGE_AFTER_EVAL => 0) ;
 	} "post code die overridden" ;
 	
 is(TEST_PACKAGE::GetVariable(), 117, 'PACKAGE OK') ;	
@@ -210,15 +219,26 @@ $context->eval
 
 stdout_is(\&writer,<<EOT,'Test STDOUT');
 Eval::Context called at 'TEST_FILE:TEST_LINE' to evaluate:
-#line 0 'THE_NAME'
+
+#line 0 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 package TEST_PACKAGE ;
+
 # pre code
 
-#line 1 'THE_NAME'
+
+#line 1 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
+
+
+
 
 # post code
 
-#end of context
+
+
+
+
+
+#end of context 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 EOT
 
 # test all overrides (put stuff in new and check it is still there)
@@ -286,3 +306,4 @@ throws_ok
 	} qr/force scalar context/, 'die in force scalar context' ;
 	
 }
+

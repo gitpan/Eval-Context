@@ -14,7 +14,7 @@ use Test::Block qw($Plan);
 use Eval::Context ; 
 
 {
-local $Plan = {'new arguments' => 3} ;
+local $Plan = {'new arguments' => 7} ;
 
 lives_ok
 	{
@@ -33,6 +33,20 @@ lives_ok
 
 	my $context = new Eval::Context(@parameters) ;
 	} 'accepts all defined arguments' ;
+
+lives_ok
+	{
+	my $context = new Eval::Context(NAME => '') ;
+	$context->eval(CODE => '') ;
+	is($context->{NAME}, 'Anonymous eval context',  'empty name is makes object anonymous') ;
+	} 'empty name' ;
+	
+lives_ok
+	{
+	my $context = new Eval::Context(NAME => undef) ;
+	$context->eval(CODE => '') ;
+	is($context->{NAME}, 'Anonymous eval context',  'undefined name is makes object anonymous') ;
+	} 'undefined name' ;
 
 throws_ok
 	{

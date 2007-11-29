@@ -23,5 +23,12 @@ t/004_new.t
 t/005_eval.t
 t/005_eval_no_NoWarnings.t
 t/006_install_subs.t
+t/007_cleanup.t
+t/008_variables.t
+t/009_persistent_variables.t
+t/010_shared_variables.t
+t/011_eval_side_persistent_variables.t
+t/012_safe.t
+t/050_unit.t
 t/perlcriticrc
 t/test_template

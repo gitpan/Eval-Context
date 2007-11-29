@@ -23,7 +23,7 @@ my $context = new Eval::Context() ;
 
 lives_ok
 	{
-	my $value = $context->eval(CODE => "(7,8)", PACKAGE => 'A') ;
-	is($value, 8, 'eval returned last value') ;
+	my $value = $context->eval(CODE => "(7,8) ;", PACKAGE => 'A') ;
+	is($value, 8, 'eval returned last value') or diag "latest code:\n$context->{LATEST_CODE}\n" ;
 	} 'returned list, scalar context' ;
 }

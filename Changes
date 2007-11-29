@@ -1,3 +1,13 @@
+0.03
+	COMMENT: Major changes in this release
+	CHANGED: default package based on Eval::Context::Run_xx
+	ADDED: add caller's FILE and NAME to the evaluated code file name 
+	ADDED: automatic package cleanup (REMOVE_PACKAGE_AFTER_EVAL)
+	ADDED: added INSTALL_VARIABLES
+	ADDED: CLEAR_PERSISTENT
+	ADDED: eval side persistent variable
+	ADDED: SAFE
+	
 0.02
 	ADDED: INSTALL_SUBS
 	

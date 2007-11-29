@@ -1,2 +1,37 @@
+EVAL => {} vs EVAL => ""
+
+stay <safe> is the default. INPUT_IS_SAFE => 1
+	http://perldoc.perl.org/perlmod.html#BEGIN%2c-CHECK%2c-INIT-and-END
+	B::Concise, usin ops to find out if code uses eval, system, qx, unlink, ...
+	chroot pbs
+	the test code used to find out is certain constructs are used (system, ...) should run a self test  to check 
+		if perl itself doesn't change the way ops are written
+
 
 use the module that gives the eval code in the error
+
+catch exception and let user check the object instead?
+	$context->TryEval(...) ;
+	return $context->Result() if($context->CaughtException()) ; # check context
+	$context->GetException() ;
+	
+- "Give me sugar baby" Ash.
+	See Safe::Share for ideas about INSTALL_* functionality
+
+	variables can be
+		shared
+		shared reference
+		persistant my variables
+
+	eval side sharing
+	
+#Verbatim (scalar(definition) == 1) should have 2 arguments, second argument being 'VERBATIM'
+	
+#package cleanup after eval to free memory
+	only if it is a default package
+	
+#use a random package by default
+
+#accept FILE and LINE in Eval call
+    use it as the file name concatenated with the object's name
+    

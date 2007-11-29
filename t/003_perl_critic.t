@@ -9,8 +9,8 @@ use Term::ANSIColor qw(:constants) ;
 
 use Test::Perl::Critic 
 	-severity => 1,
-	#~ -format =>  "[%s] %m at '%f:" . RED . "%l:%c" . RESET . "' rule %p %e\n"
-				#~ . "\t%r",
+	#-format =>  "[%s] %m at '%f:" . RED . "%l:%c" . RESET . "' rule %p %e\n"
+	#			. "\t%r",
 	#~ -format =>  "[%s] %m at '%f:" . BOLD . RED . "%l" . RESET . "'. %e\n",
 	-format =>  "[%s] %m at " . BOLD . BLUE . "%F:%l" . RESET . ". %e\n",
 	-exclude =>
