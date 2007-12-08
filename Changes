@@ -1,3 +1,10 @@
+0.04
+	CHANGED: moved start line closer to user code
+	CHANGED: POD so ARGUMENTS and RETURN would be nicer
+	FIXED: last percents coverage
+	CHANGED: clarified some points in the documentation
+	CHANGED: documented http://rt.cpan.org/Ticket/Display.html?id=31090
+		
 0.03
 	COMMENT: Major changes in this release
 	CHANGED: default package based on Eval::Context::Run_xx

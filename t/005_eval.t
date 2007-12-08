@@ -226,9 +226,8 @@ package TEST_PACKAGE ;
 # pre code
 
 
-#line 1 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 
-
+#line 0 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 
 
 # post code

@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION = 0.03;
+$VERSION = 0.04;
 }
 
 #-------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ use Data::Dumper ;
 =head1 DESCRIPTION
 
 This module define a subroutine that let you evaluate Perl code in a specific context. The code can be passed directly as 
-a string or as a file name to read from. It also provides some subroutines to late you define and optionally share
+a string or as a file name to read from. It also provides some subroutines to let you define and optionally share
 variables and subroutines between your code and the code you wish to evaluate. Finally there is some support for running
 your code in a safe compartment.
 
@@ -103,19 +103,19 @@ The context can be used many times. The values can be temporarily overridden dur
 		DISPLAY_SOURCE_IN_CONTEXT => 1, #useful when debuging
 		) ;
 
-=head3 ARGUMENTS
+I<ARGUMENTS>
 
 =over 2
 
-=item * * @arguments - setup data for the object
+=item * @named_arguments - setup data for the object
 
-All the arguments optional. The argument passed to C<new> can be passed to C<eval>. All arguments are named.
+All the arguments optional. The argument passed to C<new> can also be passed to C<eval>. All arguments are named.
 
 =over 4
 
 =item * NAME - use when displaying information about the object.
 
-Optional argument. Set automatically to 'Anonymous' if not set. The name will also be reported
+Set automatically to 'Anonymous' if not set. The name will also be reported
 by perl if an error occurs during your code evaluation.
 
 =item * PACKAGE - the package the code passed to C<eval> will evaluated be in.
@@ -174,22 +174,24 @@ The default is to use strict. Note that L<perldoc/Safe> default is to NOT use st
 
 This let you, for example, use certain modules which provide subroutines to be used
 in the evaluated code. The default compartment is quite restrictive and you can't even use 
-L<strict> in it without fine tuning the safe compartment.
+L<strict> in it without tuning the safe compartment.
 
 =back
 
 A few remarks:
 
-- Pass the same package name to your safe compartment and to B<Eval::Context>
+- See L<http://rt.cpan.org/Ticket/Display.html?id=31090> on RT
+
+- Pass the same package name to your safe compartment and to B<Eval::Context>.
 
 - If you really want to be on the safe side, control your input. When you use a module, are you
 sure the module hasn't been fiddle with?
 
-- Leave strict on. Even for trivial code
+- Leave strict on. Even for trivial code.
 
 =item * INSTALL_VARIABLES - "Give me sugar baby" Ash.
 
-B<Eval::Context> has three mechanisms you can use to set and share variables with the 
+B<Eval::Context> has mechanisms you can use to set and share variables with the 
 code you will evaluate. There are two sides in an B<Eval::Context>. The I<caller-side>, 
 the side where the calls to C<eval> are made and the I<eval-side>, the side where the code to 
 be evaluated is run.
@@ -249,8 +251,8 @@ on the I<caller-side>.
 
 Define persistent variables:
 
-	# note: creating persistent variables in 'new'  makes little sense as
-	# it will force those values in the persistent  variables for every run.
+	# note: creating persistent variables in 'new' makes little sense as
+	# it will force those values in the persistent variables for every run.
 	# This may or may not be what you want.
 	
 	my $context = new Eval::Context() ;
@@ -276,7 +278,7 @@ Later, use the persistent value:
 		INSTALL_VARIABLES =>
 			[
 			[ '$scalar'  => $Eval::Context::USE => $Eval::Context::PERSISTENT ] ,
-			# here you decided %hash shouldn't be available on the eval-side
+			# here you decided %hash and $hash shouldn't be available on the eval-side
 			],
 			
 		CODE => '$scalar',
@@ -310,12 +312,12 @@ next time you cal C<eval>.
 
 	my @persistent_variable_names = $context->GetPersistantVariablesNames() ;
 
-=item * Persistent variables defined on the eval-side
+=item * Creating persistent variables on the eval-side
 
 The mechanism above gave you fine control over persistent variables on the I<eval-side>. 
-The counter effect is that B<only> the variables you decide can be made persistent can
-be used on the I<eval-side>. B<Eval::Context> has another mechanism that allows the I<eval-side>
-to store variables between evaluations without the I<caller-side> declaration of the variables.
+The negative side is that B<only> the variables you made persistent exist on the I<eval-side>.
+B<Eval::Context> has another mechanism that allows the I<eval-side> to store variables 
+between evaluations without the I<caller-side> declaration of the variables.
 
 To allow the I<eval-side> to store any variable, add this to you C<new> call.
 
@@ -436,11 +438,11 @@ Used when an error occurs during code evaluation.
 
 =back
 
-=item * FILE - the file where the object has been created. Set automatically if not set. 
+=item * FILE - the file where the object has been created. 
 
 This is practical if you want to wrap the object.
 
-B<FILE> and B<LINE> will 
+B<FILE> and B<LINE> will be set automatically if not set.
 
 =item * LINE - the line where the object has been created. Set automatically if not set.
 
@@ -450,7 +452,7 @@ B<FILE> and B<LINE> will
 
 =back
 
-=head3 Return
+I<Return>
 
 =over 2
 
@@ -585,7 +587,7 @@ Sets {INTERACTION} fields that are not set by the user.
 
 my ($interaction_container) = @_ ;
 
-$interaction_container->{INTERACTION}{INFO} ||= sub {print @_} ;
+$interaction_container->{INTERACTION}{INFO} ||= sub {my (@information) = @_ ; print  @information} ; ## no critic (InputOutput::RequireCheckedSyscalls)
 $interaction_container->{INTERACTION}{WARN} ||= \&Carp::carp ;
 $interaction_container->{INTERACTION}{DIE}  ||= sub { my($self, @error) = @_ ; Carp::confess(@error)} ;
 $interaction_container->{INTERACTION}{EVAL_DIE}  ||= 
@@ -634,12 +636,12 @@ Evaluates Perl code, passed as a string or read from a file, in the context.
 	$context->eval(CODE => 'print "evaluated in an Eval::Context!";') ;
 	$context->eval(CODE_FROM_FILE => 'file.pl') ;
 
-B<Call context>
+I<Call context>
 
 Evaluation context of the code (void, scalar, list) is the same as the context this subroutine was called in
 or in the context defined by B<PERL_EVAL_CONTEXT> if that option is present.
 
-B<Arguments>
+I<Arguments>
 
 B<NOTE: You can override any argument passed to >C<new>B<. The override is temporary during
 the duration of this call.>
@@ -667,7 +669,7 @@ NOTE: B<CODE> or B<CODE_FROM_FILE> is B<mandatory>.
 
 =back
 
-B<Return>
+I<Return>
 
 =over 2
 
@@ -698,9 +700,8 @@ $pre_code_commented_out
 $options->{PRE_CODE}
 $variables_setup
 
-#line 1 '$options->{NAME}'
 $code_start
-
+#line 0 '$options->{NAME}'
 $options->{CODE}
 
 $options->{POST_CODE}
@@ -1172,7 +1173,7 @@ Generates code to make persistent variables, defined on the I<caller-side> avail
 
 =cut
 
-my ($self, $options, $variable_name, $variable_value, $variable_type, $share_attribute) = @_ ;
+my ($self, $options, $variable_name, $variable_value, $variable_type) = @_ ;
 
 my $persistance_handler_name = 'EvalContextSavePersistentVariable' ;
 
@@ -1267,7 +1268,7 @@ Also check that variables are not B<PERSISTENT> and B<SHARED>.
 
 =cut
 
-my ($self, $options, $variable_name, $variable_value, $variable_type, $share_attribute) = @_ ;
+my ($self, $options, $variable_name, $variable_value, $variable_type) = @_ ;
 
 my ($setup_code, $teardown_code) = ($EMPTY_STRING, $EMPTY_STRING) ;
 
@@ -1365,9 +1366,9 @@ sub GetPersistentVariableNames
 
 =head2 GetPersistentVariableNames()
 
-=head3 Arguments - none
+I<Arguments> - none
 
-=head3 Returns - the list of existing persistent variables names
+I<Returns> - the list of existing persistent variables names
 
 	my @persistent_variable_names = $context->GetPersistantVariablesNames() ;
 
@@ -1385,7 +1386,7 @@ sub GetPersistantVariables
 
 =head2 GetPersistantVariables(@variable_names)
 
-=head3 Arguments
+I<Arguments>
 
 =over 2
 
@@ -1393,7 +1394,7 @@ sub GetPersistantVariables
 
 =back
 
-=head3 Returns - list of values corresponding to the input names
+I<Returns> - list of values corresponding to the input names
 
 This subroutine will return whatever the I<caller-site> set or the I<eval-side> modified. Thus if
 you created a I<%hash> persistent variable, a hash (not a hash reference) will be returned.
@@ -1622,7 +1623,9 @@ return(1) ;
 
 =head1 BUGS AND LIMITATIONS
 
-None so far.
+I have reported a very strange error when B<Safe>and B<Carp> are used together.
+L<http://rt.cpan.org/Ticket/Display.html?id=31090>. The error can be reproduced
+without using B<Eval::Context>.
 
 =head1 AUTHOR
 

@@ -31,7 +31,7 @@ use Data::TreeDumper ;
 
 use Test::Exception ;
 use Test::Warn;
-use Test::NoWarnings qw(had_no_warnings);
+#~ use Test::NoWarnings qw(had_no_warnings);
 use Test::More 'no_plan';
 use Test::Block qw($Plan);
 
@@ -188,7 +188,7 @@ is($output, 24, 'access to persistent functionality') or diag DumpTree $context 
 }
 
 {
-local $Plan = {'SAFE caller context' => 5} ;
+local $Plan = {'SAFE caller context' => 6} ;
 
 my $context = new Eval::Context
 		(
@@ -211,4 +211,34 @@ lives_ok
 	my @output = $context->eval(CODE => '$variable', INSTALL_VARIABLES => [ ['$variable', 42] ]) ;
 	is_deeply(\@output, [42], 'right value in array  context') ;
 	}  'array context' ;
+
+throws_ok
+	{
+	$context->eval(CODE => 'die "died withing safe"',) ;
+	} qr/died withing safe/, 'die within a safe' ;
+}
+
+TODO: 
+{
+local $TODO = 'SAFE and croak';
+local $Plan = {'SAFE and croak' => 1} ;
+
+my $context = new Eval::Context
+		(
+		SAFE => 
+			{
+			PRE_CODE => 'use Carp qw(carp);', # using Carp makes ___die___ behave differently !!!!!!!
+			},
+		) ;
+		
+throws_ok
+	{
+	$context->eval(CODE => 'carp "dying in Eval::Context" ;',) ;
+	} qr/croaked withing safe/, 'croak within a safe' ;
+
+
+#~ throws_ok
+	#~ {
+	#~ $context->eval(CODE => 'die "died withing safe"',) ;
+	#~ } qr/died withing safe/, 'die within a safe' ;
 }
