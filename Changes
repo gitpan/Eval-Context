@@ -1,3 +1,7 @@
+0.05
+	CHANGED: replace POD::Spelling with Perl::Critic policy
+	FIXED: missing dependency
+	
 0.04
 	CHANGED: moved start line closer to user code
 	CHANGED: POD so ARGUMENTS and RETURN would be nicer

@@ -12,10 +12,12 @@ use the module that gives the eval code in the error
 
 catch exception and let user check the object instead?
 	$context->TryEval(...) ;
-	return $context->Result() if($context->CaughtException()) ; # check context
-	$context->GetException() ;
 	
-- "Give me sugar baby" Ash.
+	$context->CaughtException()
+		? $context->RethrowException()
+		: $context->GetResults()
+	
+# "Give me sugar baby" Ash.
 	See Safe::Share for ideas about INSTALL_* functionality
 
 	variables can be

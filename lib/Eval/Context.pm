@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION = 0.04;
+$VERSION = 0.05;
 }
 
 #-------------------------------------------------------------------------------
@@ -292,7 +292,7 @@ Any other value will reinitialize the persistent variable. See also B<REMOVE_PER
 Although the first intent of persistent variables is to be used as state variables on
 the eval-side, you can get persistent variables values on the caller-side. To change the
 value of an I<eval-side> persistent variable, simply reinitialize it with B<INSTALL_VARIABLES>
-next time you cal C<eval>.
+next time you call C<eval>.
 
 	my $context = new Eval::Context
 			(
@@ -590,11 +590,12 @@ my ($interaction_container) = @_ ;
 $interaction_container->{INTERACTION}{INFO} ||= sub {my (@information) = @_ ; print  @information} ; ## no critic (InputOutput::RequireCheckedSyscalls)
 $interaction_container->{INTERACTION}{WARN} ||= \&Carp::carp ;
 $interaction_container->{INTERACTION}{DIE}  ||= sub { my($self, @error) = @_ ; Carp::confess(@error)} ;
+
 $interaction_container->{INTERACTION}{EVAL_DIE}  ||= 
 	sub {
 		my($self, $error) = @_ ;
 		Carp::confess($self->{LATEST_CODE} . $error) ;
-		} ;
+		}  ;
 
 return ;
 }
@@ -1623,7 +1624,7 @@ return(1) ;
 
 =head1 BUGS AND LIMITATIONS
 
-I have reported a very strange error when B<Safe>and B<Carp> are used together.
+I have reported a very strange error when B<Safe> and B<Carp> are used together.
 L<http://rt.cpan.org/Ticket/Display.html?id=31090>. The error can be reproduced
 without using B<Eval::Context>.
 

@@ -24,7 +24,7 @@ use Test::Perl::Critic
 		'CodeLayout::RequireTidyCode',
 		'CodeLayout::ProhibitHardTabs',
 		'CodeLayout::ProhibitTrailingWhitespace' ,
-		'Documentation::PodSpelling', # done more intelligently by pod tests
+		'ValuesAndExpressions::ProhibitCommaSeparatedStatements', # too many false positives. See RT #27654
 		], 
 		
 	-profile => 't/perlcriticrc' ;

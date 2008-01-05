@@ -1,6 +1,6 @@
 ---
 name: Eval-Context
-version: 0.04
+version: 0.05
 author:
   - 'Khemir Nadim ibn Hamouda. <nadim@khemir.net>'
 abstract: "Evalute perl code in context wrapper\n"
@@ -11,6 +11,7 @@ requires:
   Data::Compare: 0
   Data::Dumper: 0
   Data::TreeDumper: 0
+  Directory::Scratch::Structured: 0
   File::Slurp: 0
   Package::Generator: 0
   Readonly: 0
@@ -34,7 +35,7 @@ requires:
 provides:
   Eval::Context:
     file: lib/Eval/Context.pm
-    version: 0.04
+    version: 0.05
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

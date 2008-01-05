@@ -216,6 +216,7 @@ my $build = $class->new
 		'Safe' => 0,
 		'Data::Dumper' => 0,
 		'version'    => 0.50,
+		'Directory::Scratch::Structured' => 0,
 		
 		'Test::Block' => 0,
 		'Test::Dependencies' => 0,
