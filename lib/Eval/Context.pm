@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION = 0.05;
+$VERSION = 0.06;
 }
 
 #-------------------------------------------------------------------------------
@@ -1290,12 +1290,34 @@ if(defined $variable_value)
 	$temporary_name_index++ ;
 	
 	$shared_variables{$variable_share_name} = $variable_value ;
-	$self->{SHARED_VARIABLES}{$variable_name} =  q{$} . __PACKAGE__ . "::shared_variables{$variable_share_name}" ;
+	
+	if(exists $options->{SAFE})
+		{
+		$self->{SHARED_VARIABLES}{$variable_name} =  $variable_share_name ;
+		}
+	else
+		{
+		# faster method
+		$self->{SHARED_VARIABLES}{$variable_name} =  q{$} . __PACKAGE__ . "::shared_variables{$variable_share_name}" ;
+		}
 	}
 	
 if(exists $self->{SHARED_VARIABLES}{$variable_name})
 	{
-	$setup_code = "my $variable_name = $self->{SHARED_VARIABLES}{$variable_name} ;\n" ;
+	if(exists $options->{SAFE})
+		{
+		$setup_code = "my $variable_name = EvalContextSharedVariable('$self->{SHARED_VARIABLES}{$variable_name}') ;\n" ;
+		
+		reinstall_sub({
+			code => sub {my ($variable_name) = @_ ; return($shared_variables{$variable_name}) ;},
+			into => $self->{CURRENT_RUNNING_PACKAGE},
+			as => 'EvalContextSharedVariable', 
+			}) ;
+		}
+	else
+		{
+		$setup_code = "my $variable_name = $self->{SHARED_VARIABLES}{$variable_name} ;\n" ; # not in Safe, we can access other packages
+		}
 	}
 else
 	{

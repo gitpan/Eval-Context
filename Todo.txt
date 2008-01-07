@@ -1,3 +1,4 @@
+
 EVAL => {} vs EVAL => ""
 
 stay <safe> is the default. INPUT_IS_SAFE => 1
@@ -17,6 +18,12 @@ catch exception and let user check the object instead?
 		? $context->RethrowException()
 		: $context->GetResults()
 	
+#variable in safe
+	normal => ok
+	shared => nok (access a package that safe chrooted
+	persisten => ?
+	eval_side persistent => ?
+
 # "Give me sugar baby" Ash.
 	See Safe::Share for ideas about INSTALL_* functionality
 

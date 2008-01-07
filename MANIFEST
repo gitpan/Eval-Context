@@ -28,6 +28,7 @@ t/009_persistent_variables.t
 t/010_shared_variables.t
 t/011_eval_side_persistent_variables.t
 t/012_safe.t
+t/013_safe_variables.t
 t/050_unit.t
 t/perlcriticrc
 t/test_template

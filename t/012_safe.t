@@ -121,32 +121,23 @@ lives_ok
 }
 
 {
-local $Plan = {'SAFE PRE_CODE in same package' => 3} ;
+local $Plan = {'SAFE PRE_CODE in same package' => 2} ;
 
 my $context = new Eval::Context(PACKAGE => 'TEST', SAFE => {}) ;
 
 my $output = $context->eval(CODE => 'my $x = 1; __PACKAGE__ ;') ;
 is($output, 'main', 'first eval package') ;
 
-lives_ok
-	{
-	use Test::Output;
+$output = $context->eval
+		(
+		SAFE =>{PRE_CODE => "use Data::TreeDumper;\n\n"},
+		CODE => 'DumpTree({A => 1}) ;',
+		) ;
 
-	sub writer 
-	{
-	my $output = $context->eval
-			(
-			SAFE =>{PRE_CODE => "use Data::TreeDumper;\n\n"},
-			CODE => 'my $x = DumpTree({A => 1}) ; print $x ;',
-			) ;
-	}
-
-	stdout_is(\&writer,<<EOT,'Test STDOUT');
+is($output,<<EOT,'Test STDOUT') or diag DumpTree $context ;
 
 `- A = 1  [S1]
 EOT
-} 'PRE_SAFE_CODE' ;
-
 }
 
 {

@@ -1,3 +1,7 @@
+0.06
+	FIXED: test works with Opcode < 1.07
+	FIXED: SHARED variables in Safe more
+	
 0.05
 	CHANGED: replace POD::Spelling with Perl::Critic policy
 	FIXED: missing dependency
