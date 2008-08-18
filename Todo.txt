@@ -1,4 +1,10 @@
 
+why can't we have package level variables in unsorted.pl
+why do we nee to use DTD per sub scope
+	=> see gpad
+
+dump should add line numbers to code
+
 EVAL => {} vs EVAL => ""
 
 stay <safe> is the default. INPUT_IS_SAFE => 1

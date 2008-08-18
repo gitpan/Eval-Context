@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION = 0.06;
+$VERSION = 0.07;
 }
 
 #-------------------------------------------------------------------------------
@@ -693,16 +693,18 @@ my ($code_start, $code_end, $return) = $self->GetCallContextWrapper($variables_s
 my ($package_setup, $compartment, $compartment_use_strict, $pre_code_commented_out) 
 	= $self->SetupSafeCompartment($package, $options) ;
 
+$self->VerifyCodeInput($options) ;
+
 $self->{LATEST_CODE} = <<"EOS" ;
 
-#line 0 '$options->{NAME}'
+#line 0 '$options->{EVAL_FILE_NAME}'
 $package_setup
 $pre_code_commented_out
 $options->{PRE_CODE}
 $variables_setup
 
 $code_start
-#line 0 '$options->{NAME}'
+#line 0 '$options->{EVAL_FILE_NAME}'
 $options->{CODE}
 
 $options->{POST_CODE}
@@ -712,7 +714,7 @@ $variables_teardown
 
 $return
 
-#end of context '$options->{NAME}'
+#end of context '$options->{EVAL_FILE_NAME}'
 EOS
 
 if($options->{DISPLAY_SOURCE_IN_CONTEXT})
@@ -862,8 +864,6 @@ the variables and the shared subroutines.
 
 my ($self, $options) = @_ ;
 
-$self->VerifyCodeInput($options) ;
-
 my $package = $self->{CURRENT_RUNNING_PACKAGE} = GetPackageName($options) ;
 
 $self->RemovePersistent($options) ;
@@ -906,6 +906,8 @@ Verify that B<CODE> or B<CODE_FROM_FILE> are properly set.
 
 my ($self, $options) = @_ ;
 
+$options->{EVAL_FILE_NAME} = $options->{NAME} || 'Anonymous' ;
+
 $options->{PRE_CODE} = defined $options->{PRE_CODE} ? $options->{PRE_CODE} : $EMPTY_STRING ;
 
 if(exists $options->{CODE_FROM_FILE} && exists $options->{CODE} )
@@ -917,6 +919,7 @@ if(exists $options->{CODE_FROM_FILE} && defined $options->{CODE_FROM_FILE})
 	{
 	$options->{CODE} = read_file($options->{CODE_FROM_FILE}) ;
 	$options->{NAME} = CanonizeName($options->{CODE_FROM_FILE}) ;
+	$options->{EVAL_FILE_NAME} = $options->{CODE_FROM_FILE} ;
 	}
 
 unless(exists $options->{CODE} && defined $options->{CODE})

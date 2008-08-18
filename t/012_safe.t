@@ -79,10 +79,10 @@ throws_ok
 	{
 	$context->eval
 			(
-			SAFE =>{PRE_CODE => "use XXX;\n\n"},
+			SAFE =>{PRE_CODE => "use Xyzzy::This_Module_SHOULD_Not_Exist;\n1;\n"},
 			CODE => '',
 			) ;
-	} qr/Can't locate XXX.pm/, 'PRE_SAFE_CODE error' ;
+	} qr~Can't locate Xyzzy/This_Module_SHOULD_Not_Exist.pm~, 'PRE_SAFE_CODE error';
 
 lives_ok
 	{

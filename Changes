@@ -1,3 +1,6 @@
+0.07
+	FIXED: test fails because of unexpectedly existing module XXX, changed to more improbable name
+	
 0.06
 	FIXED: test works with Opcode < 1.07
 	FIXED: SHARED variables in Safe more
