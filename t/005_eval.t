@@ -210,33 +210,24 @@ $context->eval
 	DISPLAY_SOURCE_IN_CONTEXT => 1,
 	FILE => 'TEST_FILE',
 	LINE => 'TEST_LINE',
-	CODE => '',
 	PACKAGE => 'TEST_PACKAGE',
-	PRE_CODE => '# pre code',
-	POST_CODE => '# post code'
+	PRE_CODE => '# test pre code',
+	CODE => '# test code',
+	POST_CODE => '# test post code'
 	) ;
 }
 
 stdout_is(\&writer,<<EOT,'Test STDOUT');
 Eval::Context called at 'TEST_FILE:TEST_LINE' to evaluate:
-
 #line 0 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 package TEST_PACKAGE ;
-
-# pre code
-
-
-
+# PRE_CODE
+# test pre code
 #line 0 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
-
-
-# post code
-
-
-
-
-
-
+# CODE
+# test code
+# POST_CODE
+# test post code
 #end of context 'THE_NAME_called_at_TEST_FILE:TEST_LINE'
 EOT
 
@@ -259,10 +250,11 @@ lives_ok
 	is($context->eval(CODE_FROM_FILE => "$base/file_0"), 7, 'value from file') ;
 	} 'code from file' ;
 	
-throws_ok
+eval 
 	{
-	$context->eval(CODE_FROM_FILE => '') ;
-	} qr/read_file '' - sysopen: No such file/, 'unexisting file' ;
+	$context->eval(CODE_FROM_FILE => '') ;	
+	};
+ok($!{ENOENT}, 'unexisting file' );
 }
 
 

@@ -7,7 +7,7 @@ use warnings ;
 BEGIN 
 {
 use vars qw ($VERSION);
-$VERSION = 0.07;
+$VERSION = '0.09' ;
 }
 
 #-------------------------------------------------------------------------------
@@ -594,7 +594,13 @@ $interaction_container->{INTERACTION}{DIE}  ||= sub { my($self, @error) = @_ ; C
 $interaction_container->{INTERACTION}{EVAL_DIE}  ||= 
 	sub {
 		my($self, $error) = @_ ;
-		Carp::confess($self->{LATEST_CODE} . $error) ;
+		Carp::confess
+			(
+			"*** Eval::Context code ***\n"
+			. $self->{LATEST_CODE}
+			. "\n*** Error below ***\n"
+			. $error
+			) ;
 		}  ;
 
 return ;
@@ -616,7 +622,7 @@ my ($name) = @_ ;
 
 croak 'CanonizeName called with undefined argument!' unless defined $name ;
 
-$name =~ s/[^a-zA-Z0-9_:\.]/_/xmg ;
+$name =~ s/[^a-zA-Z0-9_:\.]/_/xsmg ;
 
 return($name) ;
 }
@@ -625,7 +631,7 @@ return($name) ;
 
 Readonly my $EVAL_ARGUMENTS => [@{$NEW_ARGUMENTS}, qw(CODE CODE_FROM_FILE REMOVE_PERSISTENT)] ;
 
-sub eval ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+sub eval ## no critic (Subroutines::ProhibitBuiltinHomonyms ErrorHandling::RequireCheckingReturnValueOfEval)
 {
 
 =head2 eval(@named_arguments)
@@ -695,27 +701,29 @@ my ($package_setup, $compartment, $compartment_use_strict, $pre_code_commented_o
 
 $self->VerifyCodeInput($options) ;
 
-$self->{LATEST_CODE} = <<"EOS" ;
+$self->{LATEST_CODE} = "#line 0 '$options->{EVAL_FILE_NAME}'\n" ;
 
-#line 0 '$options->{EVAL_FILE_NAME}'
-$package_setup
-$pre_code_commented_out
-$options->{PRE_CODE}
-$variables_setup
-
-$code_start
-#line 0 '$options->{EVAL_FILE_NAME}'
-$options->{CODE}
-
-$options->{POST_CODE}
-$code_end
-
-$variables_teardown
-
-$return
-
-#end of context '$options->{EVAL_FILE_NAME}'
-EOS
+for
+	(
+	$package_setup,
+	$pre_code_commented_out,
+	'# PRE_CODE',
+	$options->{PRE_CODE},
+	$variables_setup,
+	$code_start,
+	"#line 0 '$options->{EVAL_FILE_NAME}'",
+	'# CODE',
+	$options->{CODE},
+	'# POST_CODE',
+	$options->{POST_CODE},
+	$code_end,
+	$variables_teardown,
+	$return,
+	"#end of context '$options->{EVAL_FILE_NAME}'",
+	)
+	{
+	$self->{LATEST_CODE} .= "$_\n" if defined $_ ;
+	}
 
 if($options->{DISPLAY_SOURCE_IN_CONTEXT})
 	{
@@ -727,7 +735,7 @@ if(defined $options->{PERL_EVAL_CONTEXT})
 	{
 	if($options->{PERL_EVAL_CONTEXT})
 		{
-		my @results = 
+		my  @results = 
 			$compartment
 				? $compartment->reval($self->{LATEST_CODE}, $compartment_use_strict)
 				: eval $self->{LATEST_CODE} ; ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -868,7 +876,7 @@ my $package = $self->{CURRENT_RUNNING_PACKAGE} = GetPackageName($options) ;
 
 $self->RemovePersistent($options) ;
 
-my ($variables_setup, $variables_teardown) = ($EMPTY_STRING, $EMPTY_STRING) ;
+my ($variables_setup, $variables_teardown) = (undef, undef) ;
 
 if(defined $options->{INSTALL_VARIABLES})
 	{
@@ -981,9 +989,9 @@ Generates perl code to wrap the code to be evaluated in the right calling contex
 
 my ($self, $variables_setup, $options) = @_ ;
 
-my ($code_start, $code_end, $return) = ($EMPTY_STRING, $EMPTY_STRING, $EMPTY_STRING) ; # defaults for void context
+my ($code_start, $code_end, $return) = (undef, undef, undef) ; # defaults for void context
 
-if($variables_setup ne $EMPTY_STRING)
+if(defined $variables_setup)
 	{
 	if(defined $options->{PERL_EVAL_CONTEXT})
 		{
@@ -1031,18 +1039,16 @@ If running in safe mode, setup a safe compartment from the argument, otherwise d
 
 my ($self, $package, $options) = @_ ;
 
-my ($package_setup, $compartment, $compartment_use_strict, $pre_code_commented_out) = (undef, undef, 1, $EMPTY_STRING) ;
+my ($package_setup, $compartment, $compartment_use_strict, $pre_code_commented_out) = (undef, undef, 1, undef) ;
 
 if(exists $options->{SAFE})
 	{
 	if('HASH' eq ref $options->{SAFE})
 		{
-		$package_setup = $EMPTY_STRING ; # no package in code when in SAFE mode, SAFE handles it properly
-		
 		if(exists $options->{SAFE}{PRE_CODE})
 			{
 			# must be done before creating the safe compartment
-			my $pre_code = "\npackage " . $package . " ;\n\n" . $options->{SAFE}{PRE_CODE} ;
+			my $pre_code = "\npackage " . $package . " ;\n" . $options->{SAFE}{PRE_CODE} ;
 			
 			eval $pre_code ; ## no critic (BuiltinFunctions::ProhibitStringyEval)
 			
@@ -1054,9 +1060,9 @@ if(exists $options->{SAFE})
 			
 			$pre_code_commented_out = 
 				"#  Note: evaluated PRE_CODE before running SAFE code\n" 
-				. "=comment\n"
+				. "=comment\n\n"
 				. $pre_code
-				. "=cut\n\n" ;
+				. "\n\n=cut\n" ;
 			}
 			
 		if(exists $options->{SAFE}{COMPARTMENT})
@@ -1238,7 +1244,7 @@ reinstall_sub
 		else
 			{
 			# convert and serialize at once
-			my ($sigil, $name) = $variable_name =~ /(.)(.*)/xm ;
+			my ($sigil, $name) = $variable_name =~ /(.)(.*)/sxm ;
 			
 			$self->{PERSISTENT_VARIABLES}{$variable_name} = Data::Dumper->Dump([$variable_ref], [$name]) ;
 			$self->{PERSISTENT_VARIABLES}{$variable_name} =~ s/\$$name\ =\ ./$variable_name = (/xsm ;
@@ -1289,7 +1295,7 @@ if(defined $variable_value)
 		}
 
 	my $variable_share_name = "${variable_name}_$self->{FILE}_$self->{LINE}_$temporary_name_index" ;
-	$variable_share_name =~ s/[^a-zA-Z0-9_]+/_/xmg ;
+	$variable_share_name =~ s/[^a-zA-Z0-9_]+/_/xsmg ;
 	$temporary_name_index++ ;
 	
 	$shared_variables{$variable_share_name} = $variable_value ;
@@ -1348,7 +1354,7 @@ my ($self, $options, $variable_name, $variable_value, $variable_type) = @_ ;
 my $DIE = $self->{INTERACTION}{DIE} ;
 my $code_to_evaluate  = $EMPTY_STRING ;
 
-my ($sigil, $name) = $variable_name =~ /(.)(.*)/xm ;
+my ($sigil, $name) = $variable_name =~ /(.)(.*)/sxm ;
 $DIE->($self, "Invalid variable type for '$variable_name' at '$options->{FILE}:$options->{LINE}'!") unless $valid_sigil{$sigil} ;
 
 if(! defined $variable_value)

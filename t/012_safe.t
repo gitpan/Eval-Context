@@ -11,18 +11,6 @@ use Data::Dumper ;
 
 #----------------------------------------------------------
 
-package some_object ;
-
-use strict ;
-use warnings ;
-
-sub new {bless { VALUE => $_[1] }, $_[0];}
-sub GetValue {$_[0]->{VALUE} ;}
-sub AddOne{$_[0]->{VALUE} += 1 ;}
-sub GetDump {Data::Dumper->Dump([$_[0]]) ;}
-
-#----------------------------------------------------------
-
 package main ;
 
 use strict ;
@@ -35,7 +23,9 @@ use Test::Warn;
 use Test::More 'no_plan';
 use Test::Block qw($Plan);
 
-use Eval::Context 'constants' ; 
+use Eval::Context ; 
+
+$|++;
 
 {
 local $Plan = {'Default SAFE in constructor' => 1} ;
@@ -44,7 +34,7 @@ my $context = new Eval::Context(SAFE => {}) ;
 
 throws_ok
 	{
-	$context->eval(	CODE => 'eval "1 + 1" ;') ;
+	$context->eval( CODE => 'eval "1 + 1" ;') ;
 	} qr/'eval "string"' trapped by operation mask/, 'unsafe code, using default safe' ;
 }
 
@@ -55,7 +45,7 @@ my $context = new Eval::Context() ;
 
 throws_ok
 	{
-	$context->eval(	CODE => 'eval "1 + 1" ;', SAFE => {}) ;
+	$context->eval( CODE => 'eval "1 + 1" ;', SAFE => {}) ;
 	} qr/'eval "string"' trapped by operation mask/, 'unsafe code' ;
 }
 
@@ -209,27 +199,35 @@ throws_ok
 	} qr/died withing safe/, 'die within a safe' ;
 }
 
-TODO: 
 {
-local $TODO = 'SAFE and croak';
-local $Plan = {'SAFE and croak' => 1} ;
+local $Plan = {'SAFE and croak' => 3} ;
 
 my $context = new Eval::Context
 		(
 		SAFE => 
 			{
-			PRE_CODE => 'use Carp qw(carp);', # using Carp makes ___die___ behave differently !!!!!!!
+			PRE_CODE => 'use Carp  ;',
 			},
 		) ;
 		
+my $output = $context->eval(CODE => '$variable', INSTALL_VARIABLES => [ ['$variable', 42] ]) ;
+is($output, 42, 'right value in scalar context') ;
+
 throws_ok
 	{
-	$context->eval(CODE => 'carp "dying in Eval::Context" ;',) ;
-	} qr/croaked withing safe/, 'croak within a safe' ;
+	# Eval context returns the code as an error, make sure the error is not part of the code
+	$context->eval(CODE => "my \$error = 'this_i' . 's_the_croak_message';\ncroak(\$error) ;",) ;
+	} qr/this_is_the_croak_message/, 'croak within a safe' ;
 
+#~ diag DumpTree $context  ;
+#~ diag $@ ;
 
-#~ throws_ok
-	#~ {
-	#~ $context->eval(CODE => 'die "died withing safe"',) ;
-	#~ } qr/died withing safe/, 'die within a safe' ;
+throws_ok
+	{
+	# Eval context returns the code as an error, make sure the error is not part of the code
+	$context->eval(CODE => 'my $error = "this_i" . "s_the_die_message";  die $error ;',) ;
+	} qr/this_is_the_die_message/, 'die within a safe while using Carp' ;
+	
+#~ diag $@ ;
+
 }
